@@ -1,0 +1,10 @@
+# Created by https://www.gitignore.io/api/julia
+
+### Julia ###
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/deps.jl
+
+# Custom ignore flag
+ign.*
