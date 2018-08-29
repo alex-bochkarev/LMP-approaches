@@ -1,0 +1,159 @@
+include("src/ieee_cdf_parser.jl")
+include("src/ieee_cdf_parser.jl")
+parse_ieee_cdf
+parse_ieee_cdf("test")
+include("src/ieee_cdf_parser.jl")
+parse_ieee_cdf("data/ieee118cdf.txt")
+include("src/ieee_cdf_parser.jl")
+parse_ieee_cdf("data/ieee118cdf.txt")
+Pkg.add("Match")
+t = "hello"
+t[1]
+t[1:2]
+t[1:4]
+t[1:4]=="hello"
+t[1:4]=="hell"
+test = "bla blah 35 ITEMS nomhomnom"
+m = match(r".+ITEMS", test)
+m = match(r"[0-9].+\sITEMS", test)
+m = match(r"\([0-9].+\)\sITEMS", test)
+m
+m = match(r"([0-9].+)\sITEMS", test)
+m
+m.match
+m.captures
+m.captures[1]
+m.captures(1)
+m.captures[1]
+Int(m.captures[1])
+Int(m.captures[1])
+m.captures[1]
+Int(m.captures[1])
+parse(Int64,m.captures[1])
+parse(Int64,m.captures[1]);
+m
+m = match(r"([0-9].+)\sITEMz", test)
+m.captures[1]
+m
+if 2<1 println("wow")
+end
+if 1<2 println("wow") end
+check
+1<2 ? println "wow"
+1<2 ? println("wow")
+1<2 ? : println("wow")
+1<2 ? :println("wow")
+1<2 ? println("wow") : println("not wow")
+2<1 ? println("wow") : println("not wow")
+test
+match(r"\(blah|bloh\) 35",test)
+match(r"\(blah|bloh\)\s35",test)
+match(r"\(blah\)\s35",test)
+match(r"blah\s35",test)
+match(r"\(blah\)\s35",test)
+match(r"blah|bloh\s35",test)
+match(r"(blah|bloh)\s35",test)
+test2="bla bloh 35 ITEMS nomhomnom"
+match(r"(blah|bloh)\s35",test2)
+println("interesting no"+1)
+println("interesting no"+String(1))
+String(1)
+Str(1)
+println("interesting no",String(1))
+println("interesting no %n",String(1))
+println("interesting no %n",1
+)
+println("interesting no",1)
+println("interesting no",1,"wah")
+test=""
+test==""
+test=="a"
+IEEE_CDF a
+a = IEEE_CDF
+a
+a.bus["Test"]="test"
+a.bus
+ using DataFrames
+a = IEEE_CDF
+a.bus
+a.bus = DataFrame
+IEEE_CDF
+dump(a)
+rn
+rm
+rm(IEEE_CDF)
+IEEE_CDF=0
+include("./src/ieee_cdf_parser.jl")
+IEEE_CDF
+IEEE_CDF.bus
+[1,2,3]
+test = IEEE_CDF()
+test = new DataFrame()
+test = DataFrame()
+text["a"] = [1,2,3]
+test["a"] = [1,2,3]
+test[::"a"] = [1,2,3]
+test = DataFrame(Name=String[], x=Int[])
+test
+test[::"A"]=[1,2,3]
+test[:]
+test[:"x"]
+test[:"x",:]
+test[:x]
+test[:Name]
+test[:Name]=["A"]
+test[:Name]="A"
+test
+test[:x]=10
+test
+test[:]
+test = DataFrame([1,2,3;4,5,6])
+test = DataFrame([1,2,3],[]4,5,6])
+test = DataFrame([1,2,3],[4,5,6])
+test = DataFrame([1 2 3; 4 5 6])
+test[1,:]
+test[2,:]
+test[2]
+test[3,:]=[7 8 9]
+test = vcat(test,DataFrame([7 8 9]))
+parse(Int, "-3.7")
+parse(Int, "-3")
+parse(Int, "-99")
+println("test","this","stuff")
+test
+x1=5
+x2=5
+x3=10
+test = vcat(test,DataFrame(x1,x2,x3))
+?vcat
+test = vcat(test,DataFrame(x1=x1,x2=x2,x3=x3))
+include("src/ieee_cdf_parser.jl")
+restart
+import ieee_cdf_parser
+import IEEE_CDF_parser
+exit
+exit()
+import IEEE_CDF_parser
+push!(LOAD_PATH,"~/energy/LMPs/src")
+import IEEE_CDF_parser
+import ieee_cdf_parser
+import IEEE_CDF_parser
+LOADPATH
+LOAD_PATH
+exit()
+import IEEE_CDF_parser
+pwd()
+import IEEE_CDF_parser
+include("test.jl")
+LOAD_PATH
+include("IEEE_CDF_parser.jl")
+include("IEEE_CDF_parser.jl")
+include("IEEE_CDF_parser.jl")
+pwd()
+reload(IEEE_CDF_parser)
+reload("IEEE_CDF_parser")
+pwd()
+LOAD_PATH
+push!(LOAD_PATH,"/home/bochkarev/energy/LMPs/src")
+reload("IEEE_CDF_parser")
+exit()
