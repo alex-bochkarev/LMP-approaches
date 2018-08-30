@@ -157,3 +157,54 @@ LOAD_PATH
 push!(LOAD_PATH,"/home/bochkarev/energy/LMPs/src")
 reload("IEEE_CDF_parser")
 exit()
+LOAD_PATH
+f
+f.readline()
+readline(f)
+readline(f)
+close(f)
+test = "abcdefg"
+test[2:]
+test[2:end]
+warn("test")
+warn("test","woh")
+bus
+parse(Int,"   2")
+line ="   1    2  1  1 1 0  0.03030   0.09990    0.02540     0     0     0    0 0  0.0       0.0 0.0    0.0     0.0    0.0    0.0"
+line[6:9]
+line[11:12]
+line[13:14]
+line[13:15]
+line[13:16]
+line[13:17]
+line[13:16]
+x = DataFrame()
+x = DataFrame(x::Int)
+x = DataFrame(t::Int)
+x = DataFrame()
+x = DataFrame(t=Int())
+x = DataFrame(t=Int
+)
+x = DataFrame(t = Int[])
+df = DataFrame(A=Int[])
+df
+df = DataFrame(A=Int[],B=Int[])
+A
+B
+df = DataFrame(Name=String[], 
+    Width=Float64[], 
+    Height=Float64[], 
+    Mass=Float64[], 
+    Volume=Float64[])
+reload("DataFrames")
+df = DataFrame(Name=String[], 
+    Width=Float64[], 
+    Height=Float64[], 
+    Mass=Float64[], 
+    Volume=Float64[])
+exit()
+df = DataFrame(A=Int[],B=Int[])
+DataFrame
+df = DataFrame(A=Int[],B=Int[])
+df = DataFrame()
+exit()
