@@ -109,12 +109,32 @@ function parse_cdf(fileName::String)
                        MaxTap = Float32[], # maximum tap or phase shift
                        StepSize = Float32[],
                        MinVal = Float32[], # minimum voltage, MVAR or MW limit
-                       MaxVal = Float32[], # maximum voltage, MVAR or MW limit
+                       MaxVal = Float32[] # maximum voltage, MVAR or MW limit
                        )
     
+    loss_zones = DataFrame(LZ = Int[],
+                           LZName = String[])
+    
+    interchange = DataFrame(AreaNum = Int[], # Area number (I) no zeros! *
+                            ISB = Int[], # Interchange slack bus number (I) *
+                            ASB = String[], # Alternate swing bus name (A)
+                            AIexport = Float32[], # Area interchange export, MW (F) (+ = out) *
+                            AItol = Float32[], # Area interchange tolerance, MW (F) *
+                            ACode = String[], # Area code (abbreviated name) (A) *
+                            AName = String[] # Area name (A)
+                            )
+
+  tie = DataFrame(MBusNum = Int[], # Metered bus number (I)
+                  MAreaNum = Int[], # Metered area number (I)
+                  NMBusNum = Int[], # Non-metered bus number (I)
+                  NMAreaNum = Int[], # Non-metered area number (I)
+                  CircuitNum = Int[] # Circuit number
+                  )
+
+
     open(fileName) do f
         lineCounter = 1;
-        readingMode = "TITLE"; ## Possible values: INIT, TITLE, BUS, BRANCH, LOSS, INTERCHANGE, TIE
+        readingMode = "TITLE"; 
 
         # TODO: implement checks?
         # - special characters
@@ -125,9 +145,8 @@ function parse_cdf(fileName::String)
         noItems_exp = 0
 
         for line in eachline(f)
-            println("Line ",lineCounter,", mode=",readingMode)
-            ## ignoring empty lines
-            line=="" ? continue : nothing;
+            line=="" ? continue : nothing;             ## ignoring empty lines
+
             if readingMode == "TITLE"
                 Date = line[2:9]
                 SenderID = line[11:30]
@@ -139,137 +158,174 @@ function parse_cdf(fileName::String)
 
             elseif readingMode == "INIT"
                 ## INIT mode
-                ## expecting section name or end of data
-                noItems_exp = 0
-                noItems = 0
-
-                m = match(r"(BUS|BRANCH|LOSS\sZONES|INTERCHANGE|TIE\sLINES) DATA FOLLOWS",line)
-                if m==nothing
-                    # not a valid section start
-                    if line=="END OF DATA"
-                        ## all the data is parsed
-                        break;
-                    end
-                else
-                    # try to extract number of items
-                    readingMode = m.captures[1]; # save section type
-                    m = match(r"([0-9].+)\s+ITEMS",line)
-                    if m!=nothing
-                        noItems_exp = parse(Int64, m.captures[1])
+                    ## expecting section name or end of data
+                    noItems_exp = 0
+                    noItems = 0
+                    m = match(r"(BUS\sDATA|BRANCH\sDATA|LOSS\sZONES|INTERCHANGE\sDATA|TIE\sLINES)\s+FOLLOWS",line)
+                    if m==nothing
+                        # not a valid section start
+                        if line=="END OF DATA"
+                            ## all the data is parsed
+                            break;
+                        end
                     else
-                        noItems_exp=-1
-                        warn("Warning: no number of items specified for the following section --",readingMode)
+                        # try to extract number of items
+                        readingMode = m.captures[1]; # save section type
+                        m = match(r"([0-9]+)\s+ITEMS",line)
+                        if m!=nothing
+                            noItems_exp = parse(Int64, m.captures[1])
+                        else
+                            noItems_exp=-1
+                            warn("Warning: no number of items specified for the following section: `",readingMode)
+                        end
                     end
-                end
-            elseif readingMode == "BUS"
-                ## BUS mode -- reading bus data
-                BusNumber = parse(Int, line[1:4])
-                if BusNumber < 0
-                    # end of the bus section encountered
-                    noItems != noItems_exp ? warn("Warning: no. of items does not coincide with the ITEMS statement in the section head (",readingMode,") -- ",noItems_exp," expected, ",noItems," collected") : nothing
-                    readingMode="INIT"
-                    continue
-                end
-
-                try
-                    Name = line[6:17]
-                    LFA = line[19:20] # Load flow area number, non-zero
-                    LZ = parse(Int,line[21:23]) # Loss zone number
-                    BusType = parse(Int, line[25:26]) # see constants
-                    V = parse(Float16, line[28:33]) # final voltage, p.u.
-                    theta = parse(Float16,line[34:40]) # final angle, degrees
-                    P_D = parse(Float32, line[41:49]) # load MW
-                    Q_D = parse(Float32, line[50:59]) # load MVAR
-                    P_G = parse(Float32, line[60:67]) # generation MW
-                    Q_G=parse(Float32,line[68:75]) # generation MVAR
-                    println("debug")
-                    BaseKV=parse(Float32,line[77:83])
-                    DesV=parse(Float16,line[85:90]) # desired volts, p.u.
-                    MaxLimit=parse(Float32,line[91:98]) # Maximum MVAR or voltage limit
-                    MinLimit=parse(Float32,line[99:106]) # Minimum --/--/--
-                    G=parse(Float32,line[107:114]) # shunt conductance G, p.u.
-                    B=parse(Float32,line[115:122]) # shunt susceptance B, p.u.
-                    RCBN=parse(Int,line[124:end]) # remote controlled bus number
-
-                    if BusType<0 | BusType>3
-                        msgWrongFormat(lineCounter, "wrong bus type: ",BusType," -- 0,1,2 or 3 expected")
-                        return nothing;
-                    end
-                    # save the line
-                    bus = vcat(bus,DataFrame(BusNumber = BusNumber,
-                                             Name = Name,
-                                             LFA = LFA,
-                                             LZ = LZ,
-                                             BusType = BusType,
-                                             V = V,
-                                             theta = theta,
-                                             P_D = P_D,
-                                             Q_D = Q_D,
-                                             P_G = P_G,
-                                             Q_G = Q_G,
-                                             BaseKV = BaseKV,
-                                             DesV = DesV,
-                                             MaxLimit = MaxLimit,
-                                             MinLimit = MinLimit,
-                                             G = G,
-                                             B = B,
-                                             RCBN = RCBN))
-                    noItems+=1
-                catch
-                    msgWrongFormat(lineCounter+1,"line parsing error")
-                    return nothing
-                end
-
-            elseif readingMode == "BRANCH"
-                ## BRANCH mode -- reading branch data
-                TapBusNo = parse(Int, line[1:4])
-                if TapBusNo < 0
+            else
+                EntryIndex = parse(Int, line[1:min(4,length(line))])
+                if EntryIndex < 0
                     # end of the section encountered
                     noItems != noItems_exp ? warn("Warning: no. of items does not coincide with the ITEMS statement in the section head (",readingMode,") -- ",noItems_exp," expected, ",noItems," collected") : nothing
                     readingMode="INIT"
+                    lineCounter+=1
                     continue
                 end
+                
+                if readingMode == "BUS DATA"
+                    ## BUS mode -- reading bus data
+                    
+                    try
+                        bus = vcat(bus, DataFrame(BusNumber = EntryIndex,
+                                                  Name = line[6:17],
+                                                  LFA = line[19:20], # Load flow area number, non-zero
+                                                  LZ = parse(Int,line[21:23]), # Loss zone number
+                                                  BusType = parse(Int, line[25:26]), # see constants
+                                                  V = parse(Float16, line[28:33]), # final voltage, p.u.
+                                                  theta = parse(Float16,line[34:40]), # final angle, degrees
+                                                  P_D = parse(Float32, line[41:49]), # load MW
+                                                  Q_D = parse(Float32, line[50:59]), # load MVAR
+                                                  P_G = parse(Float32, line[60:67]), # generation MW
+                                                  Q_G=parse(Float32,line[68:75]), # generation MVAR
+                                                  BaseKV=parse(Float32,line[77:83]),
+                                                  DesV=parse(Float16,line[85:90]), # desired volts, p.u.
+                                                  MaxLimit=parse(Float32,line[91:98]), # Maximum MVAR or voltage limit
+                                                  MinLimit=parse(Float32,line[99:106]), # Minimum --/--/--
+                                                  G=parse(Float32,line[107:114]), # shunt conductance G, p.u.
+                                                  B=parse(Float32,line[115:122]), # shunt susceptance B, p.u.
+                                                  RCBN=parse(Int,line[124:end]), # remote controlled bus number
+                                                  ))
+                        
+                        if bus[end,:BusType]<0 | bus[end,:BusType]>3
+                            msgWrongFormat(lineCounter, "wrong bus type: ",BusType," -- 0,1,2 or 3 expected")
+                            return nothing;
+                        end
+                        
+                        noItems+=1
+                    catch
+                        msgWrongFormat(lineCounter,"line parsing error")
+                        return nothing
+                    end
 
-               try
-                   branch = vcat(branch, DataFrame(
-                       TapBusNo = TapBusNo,  # Tap bus number (I) *
-                       ZBusNo = parse(Int,line[6:9]),  # Z bus number (I) *
-                       LFA = line[11:12],  # Load flow area (I)
-                       LZ = parse(Int,line[13:15]),  # Loss zone (I)
-                       Circuit = parse(Int,line[17]),  # Circuit (I) * (Use 1 for single lines)
-                       BranchType = parse(Int,line[19]),  # Type (I) *
-                       R = parse(Float32,line[20:29]),  # Branch resistance R, per unit (F) *
-                       X = parse(Float32,line[30:40]),  # Branch reactance X, per unit (F) * No zero impedance lines
-                       B = parse(Float32,line[41:50]),  # Line charging B, per unit (F) * (total line charging, +B)
-                       MVA_ra1 = parse(Int,line[51:55]),  # Line MVA rating No 1 (I) Left justify!
-                       MVA_ra2 = parse(Int,line[57:61]),  # Line MVA rating No 2 (I) Left justify!
-                       MVA_ra3 = parse(Int,line[63:67]),  # Line MVA rating No 3 (I) Left justify!
-                       Control_bus = parse(Int,line[69:72]),  # Control bus number
-                       Side = parse(Int,line[74]),  # Side (I)
-                       TFTR = parse(Float32,line[77:82]),  # Transformer final turns ratio (F)
-                       TFtheta = parse(Float32,line[84:90]),  # Transformer (phase shifter) final angle (F)
-                       MinTap = parse(Float32,line[91:97]),  # Minimum tap or phase shift (F)
-                       MaxTap = parse(Float32,line[98:104]),  # Maximum tap or phase shift (F)
-                       StepSize = parse(Float32,line[106:111]),  # Step size (F)
-                       MinVal = parse(Float32,line[113:119]),  # Minimum voltage, MVAR or MW limit (F)
-                       MaxVal = parse(Float32,line[120:end])  # Maximum voltage, MVAR or MW limit (F)
-                   ))
-                   
-                   ## TODO: implement checks for constants (BusType, smth else)
-                   noItems+=1
-               catch
-                   msgWrongFormat(lineCounter+1,"line parsing error")
-                   return nothing
-               end
-lineCounter+=1
+                elseif readingMode == "BRANCH DATA"
+                    ## BRANCH mode -- reading branch data
+                    try
+                        branch = vcat(branch, DataFrame(
+                            TapBusNo = EntryIndex,  # Tap bus number (I) *
+                            ZBusNo = parse(Int,line[6:9]),  # Z bus number (I) *
+                            LFA = line[11:12],  # Load flow area (I)
+                            LZ = parse(Int,line[13:15]),  # Loss zone (I)
+                            Circuit = parse(Int,line[17]),  # Circuit (I) * (Use 1 for single lines)
+                            BranchType = parse(Int,line[19]),  # Type (I) *
+                            R = parse(Float32,line[20:29]),  # Branch resistance R, per unit (F) *
+                            X = parse(Float32,line[30:40]),  # Branch reactance X, per unit (F) * No zero impedance lines
+                            B = parse(Float32,line[41:50]),  # Line charging B, per unit (F) * (total line charging, +B)
+                            MVA_ra1 = parse(Int,line[51:55]),  # Line MVA rating No 1 (I) Left justify!
+                            MVA_ra2 = parse(Int,line[57:61]),  # Line MVA rating No 2 (I) Left justify!
+                            MVA_ra3 = parse(Int,line[63:67]),  # Line MVA rating No 3 (I) Left justify!
+                            Control_bus = parse(Int,line[69:72]),  # Control bus number
+                            Side = parse(Int,line[74]),  # Side (I)
+                            TFTR = parse(Float32,line[77:82]),  # Transformer final turns ratio (F)
+                            TFtheta = parse(Float32,line[84:90]),  # Transformer (phase shifter) final angle (F)
+                            MinTap = parse(Float32,line[91:97]),  # Minimum tap or phase shift (F)
+                            MaxTap = parse(Float32,line[98:104]),  # Maximum tap or phase shift (F)
+                            StepSize = parse(Float32,line[106:111]),  # Step size (F)
+                            MinVal = parse(Float32,line[113:119]),  # Minimum voltage, MVAR or MW limit (F)
+                            MaxVal = parse(Float32,line[120:end])  # Maximum voltage, MVAR or MW limit (F)
+                        ))
+                        ## TODO: implement checks for constants (BusType, smth else)
+                        noItems+=1
+
+                    catch
+                        msgWrongFormat(lineCounter,"line parsing error")
+                    #    return nothing
+                    end
+elseif readingMode == "LOSS ZONES"
+# loss zones mode
+try
+    loss_zones = vcat(loss_zones, DataFrame(
+        LZ = EntryIndex,
+        LZName = line[5:end]))
+    
+    ## TODO: implement checks for constants (BusType, smth else)
+    noItems+=1
+catch
+    msgWrongFormat(lineCounter,"line parsing error")
+    return nothing
+end
+
+elseif readingMode == "INTERCHANGE DATA"
+
+try
+    interchange = vcat(interchange, DataFrame(
+        AreaNum = EntryIndex,
+        ISB = parse(Int,line[4:7]),  # Interchange slack bus number (I) *
+        ASB = line[9:20],  # Alternate swing bus name (A)
+        AIexport = parse(Float32,line[21:28]),  # Area interchange export, MW (F) (+ = out) *
+        AItol = parse(Float32,line[30:35]),  # Area interchange tolerance, MW (F) *
+        ACode = line[38:43],  # Area code (abbreviated name) (A) *
+        AName = line[46:end]  # Area name (A)
+    ))
+
+    ## TODO: implement checks for constants (BusType, smth else)
+    noItems+=1
+catch
+    msgWrongFormat(lineCounter,"line parsing error")
+    return nothing
+end
+
+
+elseif readingMode == "TIE LINES"
+MBusNum = parse(Int, line[1:4])
+if MBusNum < 0
+    # end of the section encountered
+    noItems != noItems_exp ? warn("Warning: no. of items does not coincide with the ITEMS statement in the section head (",readingMode,") -- ",noItems_exp," expected, ",noItems," collected") : nothing
+    readingMode="INIT"
+    continue
+end
+
+try
+    tie = vcat(tie, DataFrame(
+        MBusNum = MBusNum,
+        NAreaNum = parse(Int,line[7,8]),
+        NMBusNum = parse(Int,line[11,14]),
+        NMAreaNum= parse(Int,line[17,18]),
+        CircuitNum = parse(Int,line[21]) #     Circuit number
+    ))
+
+    ## TODO: implement checks for constants (BusType, smth else)
+    noItems+=1
+catch
+    msgWrongFormat(lineCounter,"line parsing error")
+    return nothing
+end
+
+
 end # if (selecting modes)
-
-
+end # if (checking for data-section end)
+lineCounter+=1
 end # for (going through lines)
 
 end # do
 
-return IEEE_CDF(bus,branch,DataFrame(),DataFrame(),DataFrame())
+return IEEE_CDF(bus,branch,loss_zones,interchange,tie)
 
 end # function
 
