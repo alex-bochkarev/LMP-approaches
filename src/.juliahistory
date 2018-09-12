@@ -208,3 +208,42 @@ DataFrame
 df = DataFrame(A=Int[],B=Int[])
 df = DataFrame()
 exit()
+testline="   1 Riversde  V2  1  1  2 0.955  10.67     51.0     27.0      0.0     0.0     0.0  0.955    15.0    -5.0   0.0    0.0        0"
+testline
+line=testline
+using DataFrames
+EntryIndex=1
+test = DataFrame(A=[1 2], b=[3 4])
+test = DataFrame(A=[1, 2], b=[3,4])
+test[end]
+test[end,:]
+test[:,end]
+test[end,:]
+test[end,:][::"b"]
+test[end,:][::b]
+test[end,:b
+]
+test[end,:A]
+line="  1 IEEE 118 BUS"
+line[5:end]
+line[1:4]
+parse(Int, line[1:4])
+EntryIndex=1
+DataFrame(
+        LZ = EntryIndex,
+        LZName = line[5:end])
+len(line)
+length(line)
+line="1   80 CabinCrk  V2    0.0  999.99  IEEE118 IEEE 118 Bus Test Case"
+"a"+"b"
+"A" & "b"
+test = IEEE_CDF_parser.parse_cdf("../data/ign.ieee118cdf.txt")
+test
+test.branch
+showall(test.bus)
+showall(test.branch)
+showall(test.loss)
+showall(test.tie)
+showall(test.interchange)
+exit
+exit()

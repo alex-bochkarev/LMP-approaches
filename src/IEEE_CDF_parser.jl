@@ -329,4 +329,31 @@ return IEEE_CDF(bus,branch,loss_zones,interchange,tie)
 
 end # function
 
+
+"""
+    makeNIMatrix(Nbuses, branch_data)
+
+makes Node-Incidence matrix from the branch data. In the data:
+ - *TapBusNo* is treated as /source/ node
+ - *ZBusNo* is treated as the /destination/ node
+
+N.I. matrix is formed within the following logic:
+ - column = arc (branch index in branch_data)
+ - row = node
+ - content = -1 if the arc /leaves/ the node
+ - content = 1 if the arc /comes/ to the node
+ - content = 0 otherwise
+"""
+function makeNIMatrix(Nbuses, branch_data)
+    NIMatrix = zeros(Nbuses,size(branch_data, 1))
+
+    for branch_i in 1:size(branch_data,1)
+        NIMatrix[branch_data[branch_i, :TapBusNo], branch_i] = -1
+        NIMatrix[branch_data[branch_i, :ZBusNo], branch_i] = 1
+    end
+
+    return(NIMatrix)
+
+end # function make NIMatrix
+
 end # module
