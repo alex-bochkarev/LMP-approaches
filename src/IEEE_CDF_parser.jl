@@ -345,6 +345,7 @@ N.I. matrix is formed within the following logic:
  - content = 0 otherwise
 """
 function makeNIMatrix(Nbuses, branch_data)
+    # TODO: check for branch type (perhaps, we want only those with type=transmission line?)
     NIMatrix = zeros(Nbuses,size(branch_data, 1))
 
     for branch_i in 1:size(branch_data,1)

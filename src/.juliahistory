@@ -247,3 +247,86 @@ showall(test.tie)
 showall(test.interchange)
 exit
 exit()
+t = DataFrame(A=[1 2 3], B=[1 2 3])
+using DataFrames
+t = DataFrame(A=[1 2 3], B=[1 2 3])
+t = DataFrame(A=[1 2 3]', B=[1 2 3]')
+t = [1,2,3]
+t = DataFrame(A=[1, 2, 3], B=[1,2,3])
+t
+for i in t
+println i::A
+for i in t
+println("A=",i::A)
+end
+for i in 1:size(t,1)
+println("A=",df[::A,i])
+end
+println("A=",df[::"A",i])
+df[1,1]
+t[1,1]
+t["A",1]
+t[::"A",1]
+t[::A,1]
+t[:A,1]
+t[1,:A]
+t[1,:B]
+help(parse_cdf)
+help(IEEE_CDF_parser.parse_cd)
+help(IEEE_CDF_parser.parse_cdf)
+help(IEEE_CDF_parser.parse_cdf)
+busd,branchd, lzd, ich,t = IEEE_CDF_parser.parse_cdf("../data/ign.ieee118cdf.txt")
+IEEE_CDF_parser.IEEE_CDF p = IEEE_CDF_parser.parse_cdf("../data/ign.ieee118cdf.txt")
+IEEE_CDF p
+df = IEEE_CDF_parser.parse_cdf("../data/ign.ieee118cdf.txt")
+df
+df.bus
+df.branch
+describe(df.branch)
+zeros(3)
+zeros(3,3)
+zeros(1,3)
+t = zeros(1,3)
+t[1,1]
+t[1,2]
+t[1,3]
+df
+df.branch
+df.branch[:TapBusNo,]
+df.bus
+df.branch
+bd
+bd[:TapBusNo,2]
+bd[:TapBusNo,]
+bd[:TapBusNo,1]
+bd[1,:TapBusNo]
+bd[2,:TapBusNo]
+bd[3,:TapBusNo]
+df.branch
+t=[1,2,3]
+z=[0,1,0]
+t&z
+t*z
+t .* z
+t
+sum(t)
+t'
+t' * t
+pi
+buses[,:Pmax]
+buses[:,:Pmax]
+max(buses[:,:Pmax])
+buses[:,:Pmax]
+max(buses[:,:Pmax])
+maximum(buses[:,:Pmax])
+Nbranches
+f
+Nbus
+buses[,:Pmax]
+buses[:,:Pmax]
+buses[:,:Pmin]
+Float64(3)
+help(Model)
+help Model
+NIM
+Pkg.add("IJulia"")
