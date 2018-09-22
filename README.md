@@ -1,5 +1,5 @@
 # LMPs -- approaches
-A main repo for the project (pls see Overleaf for the text).
+The main repo for the project. Working paper draft itself is not included -- pls see Overleaf.
 
 What's there:
 - [src](src/) -- source files. Includes `.jl`-scripts (data files parser + tests) and the main `jupyter` notebook
